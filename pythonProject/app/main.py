@@ -1,6 +1,6 @@
 import pygame.display
 
-from app.elements import Tiles
+from app.game_board import Tiles
 from settings import *
 import pygame
 

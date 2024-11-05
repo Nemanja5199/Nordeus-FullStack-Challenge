@@ -13,9 +13,6 @@ class Tiles:
         self.tile_colors = [[height_to_color(self.height_matrix[row][col])
                              for col in range(COLS)] for row in range(ROWS)]
 
-
-
-
     def displayTiles(self):
         for row in self.tile_colors:
             print("[", end=" ")
@@ -32,13 +29,6 @@ class Tiles:
 
         self.drawGrid(screen)
 
-
-    def getTilePos(self, mouse_pos):
-
-        x, y = mouse_pos
-        row = y // TILESIZE
-        col = x // TILESIZE
-        return row, col
 
     def drawGrid(self,screen):
         for x in range(0, WIDTH, TILESIZE):
