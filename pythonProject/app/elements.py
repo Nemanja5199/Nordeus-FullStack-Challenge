@@ -1,11 +1,18 @@
+from app.Input import getMatrix, printData
 from settings import *
 import pygame
+from color_mapper import height_to_color
 
 
 class Tiles:
     def __init__(self):
+        self.height_matrix= getMatrix()
+        print("Matix in Tiles:")
+        print(self.height_matrix)
+        printData()
+        self.tile_colors = [[height_to_color(self.height_matrix[row][col])
+                             for col in range(COLS)] for row in range(ROWS)]
 
-        self.tile_colors = [[BGCOLOUR for x in range(COLS)] for y in range(ROWS)]
 
 
 
@@ -23,16 +30,10 @@ class Tiles:
                 rect = pygame.Rect(col * TILESIZE, row * TILESIZE, TILESIZE, TILESIZE)
                 pygame.draw.rect(screen, self.tile_colors[row][col], rect)
 
-
         self.drawGrid(screen)
 
-    def change_tile_color(self, row, col, color):
 
-        if 0 <= row < ROWS and 0 <= col < COLS:
-            self.tile_colors[row][col] = color
-            self.displayTiles()
-
-    def get_tile_pos(self, mouse_pos):
+    def getTilePos(self, mouse_pos):
 
         x, y = mouse_pos
         row = y // TILESIZE
