@@ -1,10 +1,10 @@
 import pygame.display
 
-from app.game_board import Tiles
+from app.game_board import GameBoard
 from settings import *
 import pygame
 
-from Input import printData
+
 
 
 class Game:
@@ -13,7 +13,7 @@ class Game:
         self.screen=pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock=pygame.time.Clock()
-        self.tile= Tiles()
+        self.board = GameBoard()
 
 
 
@@ -25,8 +25,7 @@ class Game:
             self.draw()
 
     def draw(self):
-        self.screen.fill(BGCOLOUR)
-        self.tile.drawTile(self.screen)
+        self.board.drawTile(self.screen)
         pygame.display.flip()
 
     def events(self):
@@ -34,6 +33,11 @@ class Game:
             if events.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
+            elif events.type == pygame.MOUSEMOTION:
+                # Update hover effect when mouse moves
+                mouse_pos = pygame.mouse.get_pos()
+                self.board.update_hover(mouse_pos)
+
 
 
 
