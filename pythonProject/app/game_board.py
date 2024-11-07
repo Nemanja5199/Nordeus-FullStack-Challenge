@@ -7,7 +7,7 @@ from game_logic import GameLogic
 
 
 class GameBoard:
-    def __init__(self, on_game_over, on_level_complete, header_height):
+    def __init__(self, on_game_over, on_level_complete, header_height, bar_width,ui_manager):
         self.height_matrix = getMatrix()
         self.tile_colors = [[height_to_color(self.height_matrix[row][col])
                              for col in range(COLS)] for row in range(ROWS)]
@@ -15,10 +15,12 @@ class GameBoard:
         self.on_game_over = on_game_over
         self.on_level_complete = on_level_complete
         self.header_height = header_height
+        self.bar_width = bar_width
+        self.ui_manager = ui_manager
 
     def handle_click(self, mouse_pos):
         x, y = mouse_pos
-        if y <= self.header_height:
+        if y <= self.header_height and x >= self.bar_width:
             return
 
         row, col = self.get_tile_pos(mouse_pos)
@@ -38,9 +40,13 @@ class GameBoard:
         return row, col
 
     def update_hover(self, mouse_pos):
-        if mouse_pos[1] > self.header_height:
+        x, y = mouse_pos
+        if y > self.header_height and x < WIDTH:
             row, col = self.get_tile_pos(mouse_pos)
             self.game_logic.update_hover(row, col)
+
+            current_height = self.height_matrix[row][col]
+            self.ui_manager.update_hover_height(current_height)
 
     def draw(self, screen, y_offset):
         self.draw_tiles(screen, y_offset)

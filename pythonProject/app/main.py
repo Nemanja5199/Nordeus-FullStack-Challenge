@@ -1,7 +1,8 @@
-# main.py
+
+
+
 import pygame.display
 from app.game_board import GameBoard
-from settings import *
 from ui_manager import *
 
 class Game:
@@ -10,11 +11,12 @@ class Game:
         pygame.font.init()
         self.setup_window()
         self.setup_game_state()
+        self.ui_manager = UIManager(self.font)
         self.initialize_board()
-        self.ui_manager =UIManager(self.font)
+
 
     def setup_window(self):
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT + HEADER_HEIGHT))
+        self.screen = pygame.display.set_mode((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, FONT_SIZE)
@@ -28,7 +30,9 @@ class Game:
         self.board = GameBoard(
             on_game_over=self.game_over,
             on_level_complete=self.level_complete,
-            header_height=HEADER_HEIGHT
+            header_height=HEADER_HEIGHT,
+            bar_width= BAR_WIDTH,
+            ui_manager= self.ui_manager
         )
 
     def game_over(self):
@@ -61,6 +65,8 @@ class Game:
     def update_display(self):
         self.screen.fill(BGCOLOUR)
         self.ui_manager.draw_header(self.screen, self.lives, self.score)
+        self.ui_manager.draw_bar(self.screen,BAR_WIDTH,HEADER_HEIGHT)
+        self.ui_manager.draw_height_bar(self.screen)
         self.board.draw(self.screen, HEADER_HEIGHT)
         pygame.display.flip()
 
