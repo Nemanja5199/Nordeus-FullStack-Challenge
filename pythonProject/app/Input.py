@@ -1,24 +1,19 @@
 import requests
 
 
-def makeApiRequest():
-    x = requests.get('https://jobfair.nordeus.com/jf24-fullstack-challenge/test')
-    text_content = x.text
-    return  text_content
-
-
-
-text_content = makeApiRequest()
-MATRIX = []
-rows = text_content.strip().split('\n')  # Split by newlines
-for row in rows:
-    number_row = [int(num) for num in row.strip().split()]
-    MATRIX.append(number_row)
-
-
-
 def getMatrix():
-    return MATRIX
+
+    response = requests.get('https://jobfair.nordeus.com/jf24-fullstack-challenge/test')
+    text_content = response.text
+
+
+    matrix = []
+    rows = text_content.strip().split('\n')
+    for row in rows:
+        number_row = [int(num) for num in row.strip().split()]
+        matrix.append(number_row)
+
+    return matrix
 
 
 def printData():
@@ -28,3 +23,8 @@ def printData():
         for num in row:
             print(f"{num:4}", end=' ')
         print()
+
+
+# Optional: for testing
+if __name__ == "__main__":
+    printData()

@@ -5,11 +5,12 @@ def height_to_color(height):
     if height == 0:  # Special case for water
         return (0, 0, 139)  # Dark blue
 
-    elif 1 <= height <= 199:  # Water to dark blue range
-        return (0, 0, int(255 * (height / 199)))
 
-    elif 200 <= height <= 399:  # Blue to green range
-        ratio = (height - 200) / 199
+    # elif 1 <= height <= 199:  # Water to dark blue range
+    #     return (0, 0, int(255 * (height / 399)))
+
+    elif 1 <= height <= 399:  # Blue to green range
+        ratio = (height - 1) / 399
         return (0,
                 int(255 * ratio),
                 int(255 * (1 - ratio)))
