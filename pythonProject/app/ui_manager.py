@@ -102,7 +102,7 @@ class UIManager:
         screen.blit(score_text, score_rect)
 
         # Play Again Button
-        self.draw_button(screen, "Play Again", center_x, center_y + 50)
+        self.draw_button(screen, "Play Again", center_x, center_y + 80)
 
 
     def draw_home_screen(self,screen):

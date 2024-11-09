@@ -59,14 +59,14 @@ class Game:
                 pygame.quit()
                 quit(0)
             elif event.type == pygame.MOUSEMOTION:
-                if self.lives > 0:
+                if self.lives > 0 and  self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT:
                         self.board.update_hover(event.pos)
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.lives <= 0:
                     if self.ui_manager.play_again_button.collidepoint(event.pos):
                         self.reset_game()
-                else:  # Game is still running
+                elif  self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT and not self.processing_click:
                         self.processing_click = True
                         self.board.handle_click(event.pos)
@@ -83,7 +83,7 @@ class Game:
 
         if self.game_state == GAME_STATE_HOME:
             self.ui_manager.draw_home_screen(self.screen)
-        elif self.lives > 0:
+        elif self.lives > 0 and  self.game_state == GAME_STATE_PLAYING:
             self.ui_manager.draw_header(self.screen, self.lives, self.score)
             self.ui_manager.draw_bar(self.screen, BAR_WIDTH, HEADER_HEIGHT)
             self.board.draw(self.screen, HEADER_HEIGHT)
