@@ -24,14 +24,26 @@ FONT_SIZE = 36
 
 MAX_HEIGHT = 1000
 
-# Game settings
+
 NORMAL_LIVES = 3
 HARD_LIVES = 2
 HARD_MODE_TIME = 30
 
-#Game States
+
 GAME_STATE_HOME = "HOME"
 GAME_STATE_PLAYING = "PLAYING"
 GAME_STATE_GAME_OVER = "GAME_OVER"
+
+
+MUSIC_VOLUME = 0.5
+MUSIC_PATHS = {
+    'menu': '../music/menu.mp3',
+    'game': [
+        '../music/song3.mp3',
+        '../music/menu.mp3',
+        '../music/song2.mp3'
+    ]
+}
+
 
 

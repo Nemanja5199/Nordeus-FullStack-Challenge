@@ -126,9 +126,10 @@ class UIManager:
         logo_rect = scaled_logo.get_rect(centerx=center_x, centery=center_y - 220)
         screen.blit(scaled_logo, logo_rect)
 
-        self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x, center_y - 60)
-        self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x, center_y + 40)
-        self.leader_board_button = self.draw_button(screen, "Leader Board", center_x, center_y + 140)
+        self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x, center_y - 80)
+        self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x, center_y )
+        self.leader_board_button = self.draw_button(screen, "Leader Board", center_x, center_y + 80)
+        self.leader_board_button = self.draw_button(screen, "Options", center_x, center_y + 160)
 
     def draw_button(self, screen, text, x, y, padding=20):
         button_font = pygame.font.Font(FONT, 36)

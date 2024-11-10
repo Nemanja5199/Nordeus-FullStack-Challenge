@@ -5,6 +5,7 @@ import pygame.display
 
 
 from app.game_board import GameBoard
+from app.music_manager import MusicManager
 from ui_manager import *
 
 class Game:
@@ -15,6 +16,8 @@ class Game:
         self.setup_game_state()
         self.ui_manager = UIManager(self.font)
         self.initialize_board()
+        self.music_manager = MusicManager()
+        self.music_manager.play_menu_music()
 
 
     def setup_window(self):
@@ -74,7 +77,7 @@ class Game:
                     if self.ui_manager.play_again_button.collidepoint(event.pos):
                         self.reset_game()
                     elif self.ui_manager.home_button.collidepoint(event.pos):
-                        self.game_state = GAME_STATE_HOME
+                        self.return_to_menu()
 
                 elif self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT and not self.processing_click:
@@ -82,12 +85,16 @@ class Game:
                         self.board.handle_click(event.pos)
                         self.processing_click = False
 
+                elif event.type == pygame.USEREVENT:
+                    self.music_manager.handle_music_end()
+
 
     def reset_game(self):
         self.lives = 3
         self.score = 0
         self.initialize_board()
         self.game_state = GAME_STATE_PLAYING
+        self.music_manager.start_game_playlist()
 
     def update_display(self):
         self.screen.fill(BGCOLOUR)
@@ -103,6 +110,10 @@ class Game:
             self.ui_manager.draw_game_over_screen(self.screen, self.score)
 
         pygame.display.flip()
+
+    def return_to_menu(self):
+        self.game_state = GAME_STATE_HOME
+        self.music_manager.play_menu_music()
 
     def run(self):
         while True:
