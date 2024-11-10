@@ -92,17 +92,20 @@ class UIManager:
         center_y = (HEIGHT + HEADER_HEIGHT) // 2
 
         # Game Over Screen
-        game_over_text = self.font.render("Game Over!", True, (255, 255, 255))
-        game_over_rect = game_over_text.get_rect(centerx=center_x, centery=center_y - 50)
+        game_over_text = self.font.render("Game Over!", True, WHITE)
+        game_over_rect = game_over_text.get_rect(centerx=center_x, centery=center_y - 200)
         screen.blit(game_over_text, game_over_rect)
 
         # Score Text
-        score_text = self.font.render(f"Final Score: {score}", True, (255, 255, 255))
-        score_rect = score_text.get_rect(centerx=center_x, centery=center_y)
+        score_text = self.font.render(f"Final Score: {score}", True, WHITE)
+        score_rect = score_text.get_rect(centerx=center_x, centery=center_y - 100)
         screen.blit(score_text, score_rect)
 
         # Play Again Button
-        self.draw_button(screen, "Play Again", center_x, center_y + 80)
+        self.play_again_button = self.draw_button(screen, "Play Again", center_x, center_y + 80)
+
+        #Home Button
+        self.home_button = self.draw_button(screen, "Home", center_x, center_y + 160)
 
 
     def draw_home_screen(self,screen):
@@ -123,27 +126,37 @@ class UIManager:
         logo_rect = scaled_logo.get_rect(centerx=center_x, centery=center_y - 220)
         screen.blit(scaled_logo, logo_rect)
 
-        self.draw_button(screen, "Normal Mode", center_x, center_y -60)
-
-        self.draw_button(screen, "Hard Mode", center_x, center_y +40)
-
-        self.draw_button(screen, "Leader Board", center_x, center_y + 140)
+        self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x, center_y - 60)
+        self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x, center_y + 40)
+        self.leader_board_button = self.draw_button(screen, "Leader Board", center_x, center_y + 140)
 
     def draw_button(self, screen, text, x, y, padding=20):
         button_font = pygame.font.Font(FONT, 36)
-        button_text = button_font.render(text, True, (255, 255, 255))
-        button_rect = button_text.get_rect(centerx=x, centery=y)
 
-        # Button background rectangle
+
+        mouse_pos = pygame.mouse.get_pos()
+        button_rect = pygame.font.Font(FONT, 36).render(text, True, WHITE).get_rect(centerx=x, centery=y)
         button_bg_rect = pygame.Rect(
             button_rect.left - padding,
             button_rect.top - 10,
             button_rect.width + (padding * 2),
             button_rect.height + 20
         )
+
+
+        if button_bg_rect.collidepoint(mouse_pos):
+            text_color = (255, 255, 0)
+        else:
+            text_color = WHITE
+
+        button_text = button_font.render(text, True, text_color)
+
+
         pygame.draw.rect(screen, DARKBLUE, button_bg_rect)
         pygame.draw.rect(screen, WHITE, button_bg_rect, 2)
         screen.blit(button_text, button_rect)
+
+        return button_bg_rect
 
 
 

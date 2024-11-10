@@ -24,7 +24,7 @@ class Game:
         self.font = pygame.font.Font('../fonts/pixelated.ttf', FONT_SIZE)
 
     def setup_game_state(self):
-        self.lives = STARTING_LIVES
+        self.lives = NORMAL_LIVES
         self.score = 0
         self.processing_click = False
         self.game_state= GAME_STATE_HOME
@@ -58,19 +58,30 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
+
             elif event.type == pygame.MOUSEMOTION:
-                if self.lives > 0 and  self.game_state == GAME_STATE_PLAYING:
+                if self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT:
                         self.board.update_hover(event.pos)
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if self.lives <= 0:
+                if self.game_state == GAME_STATE_HOME:
+                    if self.ui_manager.normal_mode_button.collidepoint(event.pos):
+                        self.game_state = GAME_STATE_PLAYING
+                        self.reset_game()
+
+                elif self.game_state == GAME_STATE_GAME_OVER:
                     if self.ui_manager.play_again_button.collidepoint(event.pos):
                         self.reset_game()
-                elif  self.game_state == GAME_STATE_PLAYING:
+                    elif self.ui_manager.home_button.collidepoint(event.pos):
+                        self.game_state = GAME_STATE_HOME
+
+                elif self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT and not self.processing_click:
                         self.processing_click = True
                         self.board.handle_click(event.pos)
                         self.processing_click = False
+
 
     def reset_game(self):
         self.lives = 3
