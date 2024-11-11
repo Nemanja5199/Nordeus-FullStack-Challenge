@@ -4,7 +4,6 @@ from app.game_board import GameBoard
 from app.music_manager import MusicManager
 from ui_manager import *
 
-
 class Game:
     def __init__(self):
         pygame.init()
@@ -42,31 +41,40 @@ class Game:
 
     def game_over(self):
         print(f"\nGame Over! Final Score: {self.game_logic.score}")
+        if self.is_hard_mode:
+            print(f"Largest Streak: {self.game_logic.largest_streak}")
         self.game_state = GAME_STATE_GAME_OVER
         self.music_manager.stop_music()
 
     def level_complete(self):
-
+        # Handle hard mode time bonus and streak increment only once
         if self.game_logic.is_hard_mode:
-            # Hard mode: handle streak and time bonus
-            time_bonus = self.game_logic.handle_correct_guess()
+            time_bonus = self.game_logic.handle_correct_guess()  # Increments score and streak
+            # Update time with bonus, but not exceeding maximum
             self.game_logic.time_remaining = min(
                 HARD_MODE_TIME,
                 self.game_logic.time_remaining + time_bonus
             )
         else:
-            # Normal mode: just increment score
-            self.game_logic.score += 1
+            # In normal mode, just update the streak with a correct guess
+            self.game_logic.handle_correct_guess()  # Increments score and streak
 
         print("\nCorrect! Loading new map...")
-        # Save state before initializing new board
+
+        # Save current game state before re-initializing
         old_state = self.game_logic.get_game_state()
+
+        # Re-initialize the board
         self.initialize_board()
 
+        # Restore full state for both normal and hard modes
         self.game_logic.lives = old_state['lives']
         self.game_logic.score = old_state['score']
+        self.game_logic.consecutive_correct = old_state['consecutive_correct']
+        self.game_logic.largest_streak = old_state['largest_streak']
+
+        # Only restore time_remaining in hard mode
         if self.game_logic.is_hard_mode:
-            self.game_logic.consecutive_correct = old_state['consecutive_correct']
             self.game_logic.time_remaining = old_state['time_remaining']
 
     def set_game_mode(self, is_hard):
@@ -165,7 +173,13 @@ class Game:
             self.board.draw(self.screen, HEADER_HEIGHT)
             self.ui_manager.draw_height_bar(self.screen)
         else:
-            self.ui_manager.draw_game_over_screen(self.screen, game_state['score'])
+
+            self.ui_manager.draw_game_over_screen(
+                screen=self.screen,
+                score=self.game_logic.score,
+                largest_streak=self.game_logic.largest_streak,
+                is_hard_mode=self.is_hard_mode
+            )
 
         pygame.display.flip()
 
@@ -178,7 +192,6 @@ class Game:
             self.clock.tick(FPS)
             self.handle_events()
             self.update_display()
-
 
 if __name__ == "__main__":
     game = Game()

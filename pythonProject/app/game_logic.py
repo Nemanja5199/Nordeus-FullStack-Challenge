@@ -13,6 +13,7 @@ class GameLogic:
         self.consecutive_correct = 0
         self.is_hard_mode = False
         self.time_remaining = None
+        self.largest_streak = 0
 
         # Initialize islands
         self.find_all_islands()
@@ -107,7 +108,8 @@ class GameLogic:
 
             if was_correct:
                 print("Correct! This is the highest island!")
-                return True, TIME_BONUS if self.is_hard_mode else 0
+                # Increment the score and streak in the correct guess handler, not here
+                return True, self.handle_correct_guess() if self.is_hard_mode else 0
             else:
                 print(f"Wrong! Island #{highest_num} was higher with average {highest_avg:.2f}")
                 game_over = self.handle_wrong_guess()
@@ -118,6 +120,7 @@ class GameLogic:
         """Only called in hard mode"""
         self.score += 1
         self.consecutive_correct += 1
+        self.largest_streak = max(self.largest_streak, self.consecutive_correct)
 
         if self.lives < 3:  # Only if not at max lives
             if self.consecutive_correct == 5:
@@ -126,24 +129,23 @@ class GameLogic:
                 self.consecutive_correct = 0  # Reset streak after earning life
             else:
                 print(f"\nStreak: {self.consecutive_correct}/5 for extra life")
-
         return TIME_BONUS
 
     def handle_wrong_guess(self):
         self.lives -= 1
+        self.consecutive_correct = 0  # Reset streak for both modes
         if self.is_hard_mode:
-            self.consecutive_correct = 0  # Reset streak only in hard mode
             print(f"Streak reset! Lives remaining: {self.lives}")
         else:
             print(f"\nWrong guess! Lives remaining: {self.lives}")
         return self.lives <= 0
 
     def set_game_mode(self, is_hard_mode):
-        """Set game mode and initialize appropriate settings"""
         self.is_hard_mode = is_hard_mode
         self.lives = HARD_LIVES if is_hard_mode else NORMAL_LIVES
         self.time_remaining = HARD_MODE_TIME if is_hard_mode else None
         self.consecutive_correct = 0
+        self.largest_streak = 0
         self.score = 0
         print(f"\nGame mode set to: {'Hard' if is_hard_mode else 'Normal'}")
         print(f"Lives: {self.lives}")
@@ -155,6 +157,7 @@ class GameLogic:
         return {
             'lives': self.lives,
             'score': self.score,
+            'largest_streak': self.largest_streak,
             'consecutive_correct': self.consecutive_correct,
             'is_hard_mode': self.is_hard_mode,
             'time_remaining': self.time_remaining

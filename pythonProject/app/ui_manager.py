@@ -80,34 +80,39 @@ class UIManager:
             text_rect = text.get_rect(left=gradient_x + self.bar_width + 5, centery=text_y)
             screen.blit(text, text_rect)
 
-    def draw_game_over_screen(self, screen, score):
-
+    def draw_game_over_screen(self, screen, score, largest_streak, is_hard_mode):
+        # Draw background overlay
         overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
         overlay.fill((0, 0, 0))
         overlay.set_alpha(128)
         screen.blit(overlay, (0, 0))
 
-
         center_x = (WIDTH + BAR_WIDTH) // 2
-        center_y = (HEIGHT + HEADER_HEIGHT) // 2
+        center_y = (HEIGHT + HEADER_HEIGHT) // 2 - 200
 
-        # Game Over Screen
+        # Game Over Text
         game_over_text = self.font.render("Game Over!", True, WHITE)
-        game_over_rect = game_over_text.get_rect(centerx=center_x, centery=center_y - 200)
+        game_over_rect = game_over_text.get_rect(centerx=center_x, centery=center_y)
         screen.blit(game_over_text, game_over_rect)
 
         # Score Text
         score_text = self.font.render(f"Final Score: {score}", True, WHITE)
-        score_rect = score_text.get_rect(centerx=center_x, centery=center_y - 100)
+        score_rect = score_text.get_rect(centerx=center_x, centery=center_y + 80)
         screen.blit(score_text, score_rect)
 
-        # Play Again Button
-        self.play_again_button = self.draw_button(screen, "Play Again", center_x, center_y + 80)
+        # Largest Streak
+        streak_text = self.font.render(
+            f"Largest Streak: {largest_streak}",
+            True,
+            self.get_streak_color(largest_streak)
+        )
+        streak_rect = streak_text.get_rect(centerx=center_x, centery=center_y + 160)
+        screen.blit(streak_text, streak_rect)
 
-        #Home Button
-        self.home_button = self.draw_button(screen, "Home", center_x, center_y + 160)
-
-
+        # Buttons - adjust position based on mode
+        button_y_offset = center_y + 240
+        self.play_again_button = self.draw_button(screen, "Play Again", center_x, button_y_offset)
+        self.home_button = self.draw_button(screen, "Home", center_x, button_y_offset + 80)
     def draw_home_screen(self,screen):
 
         overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
@@ -272,4 +277,15 @@ class UIManager:
 
         # Draw the text
         screen.blit(streak_text, streak_rect)
+
+    def get_streak_color(self, streak):
+
+        if streak >= 10:
+            return (255, 215, 0)  # Gold
+        elif streak >= 7:
+            return (192, 192, 192)  # Silver
+        elif streak >= 5:
+            return (205, 127, 50)  # Bronze
+        else:
+            return WHITE
 
