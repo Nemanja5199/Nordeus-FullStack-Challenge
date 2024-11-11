@@ -48,6 +48,7 @@ class Game:
         if self.lives <= 0:
             print(f"\nGame Over! Final Score: {self.score}")
             self.game_state= GAME_STATE_GAME_OVER
+            self.music_manager.stop_music()
 
 
     def level_complete(self):
@@ -72,6 +73,8 @@ class Game:
                     if self.ui_manager.normal_mode_button.collidepoint(event.pos):
                         self.game_state = GAME_STATE_PLAYING
                         self.reset_game()
+                    elif self.ui_manager.options_button.collidepoint(event.pos):
+                        self.game_state = GAME_STATE_OPTIONS
 
                 elif self.game_state == GAME_STATE_GAME_OVER:
                     if self.ui_manager.play_again_button.collidepoint(event.pos):
@@ -79,14 +82,24 @@ class Game:
                     elif self.ui_manager.home_button.collidepoint(event.pos):
                         self.return_to_menu()
 
+                elif self.game_state == GAME_STATE_OPTIONS:
+                    if self.ui_manager.volume_slider_rect.collidepoint(event.pos):
+                        rel_x = event.pos[0] - self.ui_manager.volume_slider_rect.x
+                        new_volume = rel_x / self.ui_manager.volume_slider_rect.width
+                        new_volume = max(0, min(1, new_volume))
+                        self.music_manager.set_volume(new_volume)
+                    elif self.ui_manager.back_button.collidepoint(event.pos):
+                        self.game_state = GAME_STATE_HOME
+
                 elif self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT and not self.processing_click:
                         self.processing_click = True
                         self.board.handle_click(event.pos)
                         self.processing_click = False
 
-                elif event.type == pygame.USEREVENT:
-                    self.music_manager.handle_music_end()
+            elif event.type == pygame.USEREVENT:
+                self.music_manager.handle_music_end()
+
 
 
     def reset_game(self):
@@ -95,13 +108,16 @@ class Game:
         self.initialize_board()
         self.game_state = GAME_STATE_PLAYING
         self.music_manager.start_game_playlist()
+        self.music_manager.start_music()
 
     def update_display(self):
         self.screen.fill(BGCOLOUR)
 
         if self.game_state == GAME_STATE_HOME:
             self.ui_manager.draw_home_screen(self.screen)
-        elif self.lives > 0 and  self.game_state == GAME_STATE_PLAYING:
+        elif self.game_state == GAME_STATE_OPTIONS:
+            self.ui_manager.draw_options_screen(self.screen, self.music_manager.volume)
+        elif self.lives > 0 and self.game_state == GAME_STATE_PLAYING:
             self.ui_manager.draw_header(self.screen, self.lives, self.score)
             self.ui_manager.draw_bar(self.screen, BAR_WIDTH, HEADER_HEIGHT)
             self.board.draw(self.screen, HEADER_HEIGHT)

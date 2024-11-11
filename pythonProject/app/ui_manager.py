@@ -129,7 +129,7 @@ class UIManager:
         self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x, center_y - 80)
         self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x, center_y )
         self.leader_board_button = self.draw_button(screen, "Leader Board", center_x, center_y + 80)
-        self.leader_board_button = self.draw_button(screen, "Options", center_x, center_y + 160)
+        self.options_button = self.draw_button(screen, "Options", center_x, center_y + 160)
 
     def draw_button(self, screen, text, x, y, padding=20):
         button_font = pygame.font.Font(FONT, 36)
@@ -158,6 +158,58 @@ class UIManager:
         screen.blit(button_text, button_rect)
 
         return button_bg_rect
+
+    def draw_volume_slider(self, screen, x, y, width, height, current_volume):
+
+        slider_rect = pygame.Rect(x, y, width, height)
+        pygame.draw.rect(screen, (100, 100, 100), slider_rect)
+
+
+        volume_width = int(width * current_volume)
+        volume_rect = pygame.Rect(x, y, volume_width, height)
+        pygame.draw.rect(screen, (0, 255, 0), volume_rect)
+
+
+        pygame.draw.rect(screen, WHITE, slider_rect, 2)
+
+
+        self.volume_slider_rect = slider_rect
+
+
+        volume_text = self.font.render(f"Volume: {int(current_volume * 100)}%", True, WHITE)
+        text_rect = volume_text.get_rect(left=x, bottom=y - 10)
+        screen.blit(volume_text, text_rect)
+
+    def draw_options_screen(self, screen, current_volume):
+
+        overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(128)
+        screen.blit(overlay, (0, 0))
+
+        center_x = (WIDTH + BAR_WIDTH) // 2
+        center_y = (HEIGHT + HEADER_HEIGHT) // 2
+
+
+        options_text = self.font.render("Options", True, WHITE)
+        options_rect = options_text.get_rect(centerx=center_x, centery=center_y - 200)
+        screen.blit(options_text, options_rect)
+
+
+        slider_width = 300
+        slider_height = 20
+        self.draw_volume_slider(
+            screen,
+            center_x - slider_width // 2,
+            center_y - 100,
+            slider_width,
+            slider_height,
+            current_volume
+        )
+
+
+        self.back_button = self.draw_button(screen, "Back", center_x, center_y + 100)
+
 
 
 

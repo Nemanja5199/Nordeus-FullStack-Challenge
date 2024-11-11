@@ -33,6 +33,7 @@ HARD_MODE_TIME = 30
 GAME_STATE_HOME = "HOME"
 GAME_STATE_PLAYING = "PLAYING"
 GAME_STATE_GAME_OVER = "GAME_OVER"
+GAME_STATE_OPTIONS = "OPTIONS"
 
 
 MUSIC_VOLUME = 0.5
@@ -41,7 +42,8 @@ MUSIC_PATHS = {
     'game': [
         '../music/song3.mp3',
         '../music/menu.mp3',
-        '../music/song2.mp3'
+        '../music/song2.mp3',
+        '../music/song1.mp3'
     ]
 }
 
