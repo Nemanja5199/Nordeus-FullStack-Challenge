@@ -2,7 +2,7 @@
 import pygame
 from settings import *
 from color_mapper import *
-
+import math
 
 class UIManager:
     def __init__(self, font):
@@ -210,10 +210,66 @@ class UIManager:
 
         self.back_button = self.draw_button(screen, "Back", center_x, center_y + 100)
 
+    def draw_timer(self, screen, time_remaining):
+        if time_remaining is not None:
 
+            color = self.get_timer_color(time_remaining)
+            timer_text = self.font.render(f"Time: {time_remaining:.1f}s", True, color)
+            timer_rect = timer_text.get_rect(centerx=WIDTH // 2, centery=HEADER_HEIGHT // 2)
+            screen.blit(timer_text, timer_rect)
 
+    def get_timer_color(self, time_remaining):
+        if time_remaining > HARD_MODE_TIME / 2:
+            return (0, 255, 0)
+        elif time_remaining > HARD_MODE_TIME / 4:
+            return (255, 255, 0)
+        else:
 
+            pulse = abs(math.sin(pygame.time.get_ticks() / 200))
+            return (255, int(pulse * 100), int(pulse * 100))
 
+    def draw_streak_counter(self, screen, consecutive_correct):
 
+        # Calculate remaining guesses needed
+        remaining = 5 - consecutive_correct
 
+        # Streak text
+        streak_text = self.font.render(f"Extra Life in: {remaining}", True, WHITE)
+        streak_rect = streak_text.get_rect(
+            centerx=WIDTH // 2,  # Center horizontally
+            bottom=HEADER_HEIGHT - 5  # Place near bottom of header
+        )
+
+        # Progress bar background
+        bar_rect = pygame.Rect(
+            streak_rect.left,  # Align with text
+            streak_rect.bottom + 2,  # Just below text
+            streak_rect.width,  # Same width as text
+            4  # Height of progress bar
+        )
+        pygame.draw.rect(screen, (100, 100, 100), bar_rect)
+
+        # Progress bar fill
+        if consecutive_correct > 0:
+            progress_width = (consecutive_correct / 5) * bar_rect.width
+            progress_rect = pygame.Rect(
+                bar_rect.left,
+                bar_rect.top,
+                progress_width,
+                bar_rect.height
+            )
+
+            # Color changes from yellow to green as progress increases
+            progress_color = (
+                255 - (consecutive_correct * 51),  # Decreases red (255 -> 0)
+                255,  # Keep green at max
+                0  # No blue component
+            )
+            pygame.draw.rect(screen, progress_color, progress_rect)
+
+        # Draw border around progress bar
+        pygame.draw.rect(screen, WHITE, bar_rect, 1)
+
+        # Draw the text
+        screen.blit(streak_text, streak_rect)
 

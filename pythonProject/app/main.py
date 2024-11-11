@@ -1,12 +1,9 @@
-
-
-
+# game.py
 import pygame.display
-
-
 from app.game_board import GameBoard
 from app.music_manager import MusicManager
 from ui_manager import *
+
 
 class Game:
     def __init__(self):
@@ -18,7 +15,7 @@ class Game:
         self.initialize_board()
         self.music_manager = MusicManager()
         self.music_manager.play_menu_music()
-
+        self.is_hard_mode = False
 
     def setup_window(self):
         self.screen = pygame.display.set_mode((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
@@ -27,35 +24,56 @@ class Game:
         self.font = pygame.font.Font('../fonts/pixelated.ttf', FONT_SIZE)
 
     def setup_game_state(self):
-        self.lives = NORMAL_LIVES
-        self.score = 0
         self.processing_click = False
-        self.game_state= GAME_STATE_HOME
-
+        self.game_state = GAME_STATE_HOME
+        self.last_update_time = pygame.time.get_ticks()
 
     def initialize_board(self):
         self.board = GameBoard(
             on_game_over=self.game_over,
             on_level_complete=self.level_complete,
             header_height=HEADER_HEIGHT,
-            bar_width= BAR_WIDTH,
-            ui_manager= self.ui_manager
+            bar_width=BAR_WIDTH,
+            ui_manager=self.ui_manager
         )
+        self.game_logic = self.board.game_logic
+        if hasattr(self, 'is_hard_mode'):
+            self.game_logic.set_game_mode(self.is_hard_mode)
 
     def game_over(self):
-        self.lives -= 1
-        print(f"\nWrong guess! Lives remaining: {self.lives}")
-        if self.lives <= 0:
-            print(f"\nGame Over! Final Score: {self.score}")
-            self.game_state= GAME_STATE_GAME_OVER
-            self.music_manager.stop_music()
-
+        print(f"\nGame Over! Final Score: {self.game_logic.score}")
+        self.game_state = GAME_STATE_GAME_OVER
+        self.music_manager.stop_music()
 
     def level_complete(self):
-        self.score += 1
-        print(f"\nCorrect! Score: {self.score}")
-        print("Loading new map...")
+
+        if self.game_logic.is_hard_mode:
+            # Hard mode: handle streak and time bonus
+            time_bonus = self.game_logic.handle_correct_guess()
+            self.game_logic.time_remaining = min(
+                HARD_MODE_TIME,
+                self.game_logic.time_remaining + time_bonus
+            )
+        else:
+            # Normal mode: just increment score
+            self.game_logic.score += 1
+
+        print("\nCorrect! Loading new map...")
+        # Save state before initializing new board
+        old_state = self.game_logic.get_game_state()
         self.initialize_board()
+
+        self.game_logic.lives = old_state['lives']
+        self.game_logic.score = old_state['score']
+        if self.game_logic.is_hard_mode:
+            self.game_logic.consecutive_correct = old_state['consecutive_correct']
+            self.game_logic.time_remaining = old_state['time_remaining']
+
+    def set_game_mode(self, is_hard):
+        self.is_hard_mode = is_hard
+        if hasattr(self, 'game_logic'):
+            self.game_logic.set_game_mode(is_hard)
+            print(f"Game mode set to: {'Hard' if is_hard else 'Normal'}")
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -71,6 +89,13 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.game_state == GAME_STATE_HOME:
                     if self.ui_manager.normal_mode_button.collidepoint(event.pos):
+                        print("Normal mode selected")
+                        self.set_game_mode(False)
+                        self.game_state = GAME_STATE_PLAYING
+                        self.reset_game()
+                    elif self.ui_manager.hard_mode_button.collidepoint(event.pos):
+                        print("Hard mode selected")
+                        self.set_game_mode(True)
                         self.game_state = GAME_STATE_PLAYING
                         self.reset_game()
                     elif self.ui_manager.options_button.collidepoint(event.pos):
@@ -100,11 +125,21 @@ class Game:
             elif event.type == pygame.USEREVENT:
                 self.music_manager.handle_music_end()
 
+    def update_timer(self):
+        if self.game_logic.is_hard_mode and self.game_state == GAME_STATE_PLAYING:
+            current_time = pygame.time.get_ticks()
+            elapsed = (current_time - self.last_update_time) / 1000.0
+            self.game_logic.time_remaining -= elapsed
+            self.last_update_time = current_time
 
+            if self.game_logic.time_remaining <= 0:
+                self.game_logic.time_remaining = 0
+                print(f"\nTime's up! Final Score: {self.game_logic.score}")
+                self.game_over()
 
     def reset_game(self):
-        self.lives = 3
-        self.score = 0
+        print(f"Resetting game in {'Hard' if self.is_hard_mode else 'Normal'} mode")
+        self.last_update_time = pygame.time.get_ticks()
         self.initialize_board()
         self.game_state = GAME_STATE_PLAYING
         self.music_manager.start_game_playlist()
@@ -112,18 +147,25 @@ class Game:
 
     def update_display(self):
         self.screen.fill(BGCOLOUR)
+        game_state = self.game_logic.get_game_state()
 
         if self.game_state == GAME_STATE_HOME:
             self.ui_manager.draw_home_screen(self.screen)
         elif self.game_state == GAME_STATE_OPTIONS:
             self.ui_manager.draw_options_screen(self.screen, self.music_manager.volume)
-        elif self.lives > 0 and self.game_state == GAME_STATE_PLAYING:
-            self.ui_manager.draw_header(self.screen, self.lives, self.score)
+        elif game_state['lives'] > 0 and self.game_state == GAME_STATE_PLAYING:
+            if game_state['is_hard_mode']:
+                self.update_timer()
+
+            self.ui_manager.draw_header(self.screen, game_state['lives'], game_state['score'])
+            if game_state['is_hard_mode']:
+                self.ui_manager.draw_timer(self.screen, game_state['time_remaining'])
+
             self.ui_manager.draw_bar(self.screen, BAR_WIDTH, HEADER_HEIGHT)
             self.board.draw(self.screen, HEADER_HEIGHT)
             self.ui_manager.draw_height_bar(self.screen)
         else:
-            self.ui_manager.draw_game_over_screen(self.screen, self.score)
+            self.ui_manager.draw_game_over_screen(self.screen, game_state['score'])
 
         pygame.display.flip()
 
@@ -136,6 +178,8 @@ class Game:
             self.clock.tick(FPS)
             self.handle_events()
             self.update_display()
+
+
 if __name__ == "__main__":
     game = Game()
     game.run()

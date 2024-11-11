@@ -1,16 +1,15 @@
-# game_board.py
+#
 from app.Input import *
 from settings import *
 import pygame
 from color_mapper import height_to_color
 from game_logic import GameLogic
 
-
 class GameBoard:
-    def __init__(self, on_game_over, on_level_complete, header_height, bar_width,ui_manager):
+    def __init__(self, on_game_over, on_level_complete, header_height, bar_width, ui_manager):
         self.height_matrix = getMatrix()
         self.tile_colors = [[height_to_color(self.height_matrix[row][col])
-                             for col in range(COLS)] for row in range(ROWS)]
+                           for col in range(COLS)] for row in range(ROWS)]
         self.game_logic = GameLogic(self.height_matrix)
         self.on_game_over = on_game_over
         self.on_level_complete = on_level_complete
@@ -20,16 +19,16 @@ class GameBoard:
 
     def handle_click(self, mouse_pos):
         x, y = mouse_pos
-        if y <= self.header_height and x >= self.bar_width:
+        if y <= self.header_height or x >= WIDTH:
             return
 
         row, col = self.get_tile_pos(mouse_pos)
         if 0 <= row < ROWS and 0 <= col < COLS:
             if self.height_matrix[row][col] > 0:
-                is_correct = self.game_logic.check_guess(row, col)
-                if is_correct:
+                was_correct, result = self.game_logic.check_guess(row, col)
+                if was_correct:
                     self.on_level_complete()
-                else:
+                elif result:  # Only call game_over if game is actually over
                     self.on_game_over()
 
     def get_tile_pos(self, mouse_pos):
@@ -43,16 +42,13 @@ class GameBoard:
         x, y = mouse_pos
         if y > self.header_height and x < WIDTH:
             row, col = self.get_tile_pos(mouse_pos)
-            self.game_logic.update_hover(row, col)
-
-            current_height = self.height_matrix[row][col]
-            self.ui_manager.update_hover_height(current_height)
+            if 0 <= row < ROWS and 0 <= col < COLS:
+                self.game_logic.update_hover(row, col)
+                if self.height_matrix[row][col] > 0:
+                    self.ui_manager.update_hover_height(self.height_matrix[row][col])
 
     def draw(self, screen, y_offset):
-        self.draw_tiles(screen, y_offset)
-        self.draw_grid(screen, y_offset)
-
-    def draw_tiles(self, screen, y_offset):
+        # Draw base tiles
         for row in range(ROWS):
             for col in range(COLS):
                 rect = pygame.Rect(
@@ -63,18 +59,17 @@ class GameBoard:
                 )
                 color = self.tile_colors[row][col]
 
+                # Highlight if tile is in highlighted set
                 if (row, col) in self.game_logic.highlighted_tiles:
                     r, g, b = color
                     color = (min(r + 50, 255), min(g + 50, 255), min(b + 50, 255))
 
                 pygame.draw.rect(screen, color, rect)
 
+        self.draw_grid(screen, y_offset)
+
     def draw_grid(self, screen, y_offset):
-        for x in range(0, WIDTH, TILESIZE):
-            pygame.draw.line(screen, BLACK,
-                             (x, y_offset),
-                             (x, HEIGHT + y_offset))
-        for y in range(0, HEIGHT, TILESIZE):
-            pygame.draw.line(screen, BLACK,
-                             (0, y + y_offset),
-                             (WIDTH, y + y_offset))
+        for x in range(0, WIDTH + 1, TILESIZE):
+            pygame.draw.line(screen, BLACK, (x, y_offset), (x, HEIGHT + y_offset))
+        for y in range(0, HEIGHT + 1, TILESIZE):
+            pygame.draw.line(screen, BLACK, (0, y + y_offset), (WIDTH, y + y_offset))
