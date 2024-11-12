@@ -185,7 +185,7 @@ class UIManager:
         text_rect = volume_text.get_rect(left=x, bottom=y - 10)
         screen.blit(volume_text, text_rect)
 
-    def draw_options_screen(self, screen, current_volume):
+    def draw_options_screen(self, screen, current_volume,current_sfx_volume):
 
         overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
         overlay.fill((0, 0, 0))
@@ -210,6 +210,15 @@ class UIManager:
             slider_width,
             slider_height,
             current_volume
+        )
+
+        self.draw_sfx_slider(
+            screen,
+            center_x - slider_width // 2,
+            center_y,
+            slider_width,
+            slider_height,
+            current_sfx_volume
         )
 
 
@@ -288,4 +297,28 @@ class UIManager:
             return (205, 127, 50)  # Bronze
         else:
             return WHITE
+
+    def draw_sfx_slider(self, screen, x, y, width, height, current_sfx_volume):
+        """
+        Draws a slider bar for controlling SFX volume.
+        """
+        # Draw slider background
+        slider_rect = pygame.Rect(x, y, width, height)
+        pygame.draw.rect(screen, (100, 100, 100), slider_rect)
+
+        # Draw filled part based on SFX volume
+        sfx_volume_width = int(width * current_sfx_volume)
+        sfx_volume_rect = pygame.Rect(x, y, sfx_volume_width, height)
+        pygame.draw.rect(screen, (0, 0, 255), sfx_volume_rect)  # Blue color for SFX
+
+        # Draw border
+        pygame.draw.rect(screen, WHITE, slider_rect, 2)
+
+        # Store the slider rectangle for click detection
+        self.sfx_slider_rect = slider_rect
+
+        # Display current volume percentage
+        volume_text = self.font.render(f"SFX Volume: {int(current_sfx_volume * 100)}%", True, WHITE)
+        text_rect = volume_text.get_rect(left=x, bottom=y - 10)
+        screen.blit(volume_text, text_rect)
 

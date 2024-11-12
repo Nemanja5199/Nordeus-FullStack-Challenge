@@ -109,7 +109,7 @@ class GameLogic:
             if was_correct:
                 print("Correct! This is the highest island!")
                 # Increment the score and streak in the correct guess handler, not here
-                return True, self.handle_correct_guess() if self.is_hard_mode else 0
+                return True, False
             else:
                 print(f"Wrong! Island #{highest_num} was higher with average {highest_avg:.2f}")
                 game_over = self.handle_wrong_guess()
@@ -117,7 +117,14 @@ class GameLogic:
         return False, False
 
     def handle_correct_guess(self):
-        """Only called in hard mode"""
+
+        # Check if the game is in Hard Mode
+        if not self.is_hard_mode:
+            # Just increment the score in Normal Mode
+            self.score += 1
+            return 0  # No time bonus in Normal Mode
+
+        # Hard Mode logic
         self.score += 1
         self.consecutive_correct += 1
         self.largest_streak = max(self.largest_streak, self.consecutive_correct)
@@ -129,6 +136,7 @@ class GameLogic:
                 self.consecutive_correct = 0  # Reset streak after earning life
             else:
                 print(f"\nStreak: {self.consecutive_correct}/5 for extra life")
+
         return TIME_BONUS
 
     def handle_wrong_guess(self):

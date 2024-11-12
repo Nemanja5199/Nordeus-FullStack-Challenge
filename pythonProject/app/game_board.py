@@ -6,7 +6,7 @@ from color_mapper import height_to_color
 from game_logic import GameLogic
 
 class GameBoard:
-    def __init__(self, on_game_over, on_level_complete, header_height, bar_width, ui_manager):
+    def __init__(self, on_game_over, on_level_complete, header_height, bar_width, ui_manager,sound_manager):
         self.height_matrix = getMatrix()
         self.tile_colors = [[height_to_color(self.height_matrix[row][col])
                            for col in range(COLS)] for row in range(ROWS)]
@@ -16,6 +16,7 @@ class GameBoard:
         self.header_height = header_height
         self.bar_width = bar_width
         self.ui_manager = ui_manager
+        self.sound_manager = sound_manager
 
     def handle_click(self, mouse_pos):
         x, y = mouse_pos
@@ -28,8 +29,10 @@ class GameBoard:
                 was_correct, result = self.game_logic.check_guess(row, col)
                 if was_correct:
                     self.on_level_complete()
-                elif result:  # Only call game_over if game is actually over
-                    self.on_game_over()
+                else:
+                    self.sound_manager.play_wrong_sound()
+                    if result:  # If game is over
+                        self.on_game_over()
 
     def get_tile_pos(self, mouse_pos):
         x, y = mouse_pos

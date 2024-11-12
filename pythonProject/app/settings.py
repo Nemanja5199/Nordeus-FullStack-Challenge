@@ -39,7 +39,7 @@ GAME_STATE_GAME_OVER = "GAME_OVER"
 GAME_STATE_OPTIONS = "OPTIONS"
 
 
-MUSIC_VOLUME = 0.5
+MUSIC_VOLUME = 0.1
 MUSIC_PATHS = {
     'menu': '../music/menu.mp3',
     'game': [
@@ -48,6 +48,14 @@ MUSIC_PATHS = {
         '../music/song2.mp3',
         '../music/song1.mp3'
     ]
+}
+
+
+SOUND_EFFECTS_VOLUME = 0.7
+SOUND_EFFECTS = {
+    'button': '../sound effects/button.mp3',
+    'correct': '../sound effects/correct island.mp3',
+    'wrong': '../sound effects/wrong.mp3'
 }
 
 
