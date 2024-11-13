@@ -8,6 +8,7 @@ HEADER_HEIGHT = 50
 BAR_WIDTH=80
 FPS = 70
 TITLE = "How high up ?"
+BEACH_SIZE = TILESIZE // 4
 
 FONT="../fonts/pixelated.ttf"
 
@@ -20,6 +21,8 @@ WHITE = (255, 255, 255)
 HEADER_COLOR = (50, 50, 50)
 BAR_COLOR= (50, 50, 50)
 FONT_SIZE = 36
+BEACH_COLOR =(238, 214, 175)
+
 
 
 MAX_HEIGHT = 1000
@@ -59,4 +62,13 @@ SOUND_EFFECTS = {
 }
 
 
+# Wave Animation
+WAVE_SPEED = 1000
+WAVE_AMPLITUDE = 1.5
+WATER_SHADES = {
+    0: (0, 50, 150),     # Lighter blue, immediate water next to land
+    1: (0, 75, 180),     # Medium-light blue, one tile away from land
+    2: (0, 100, 200),    # Light blue, two tiles away from land
+    3: (0, 125, 220)     # Very light blue, further away
+}
 
