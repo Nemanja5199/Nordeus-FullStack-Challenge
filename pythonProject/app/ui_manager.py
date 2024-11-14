@@ -80,7 +80,8 @@ class UIManager:
             text_rect = text.get_rect(left=gradient_x + self.bar_width + 5, centery=text_y)
             screen.blit(text, text_rect)
 
-    def draw_game_over_screen(self, screen, score, largest_streak, is_hard_mode):
+    def draw_game_over_screen(self, screen, score, largest_streak, is_hard_mode, show_name_input=False, player_name="",
+                              score_submitted=False, submission_message=""):
         # Draw background overlay
         overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
         overlay.fill((0, 0, 0))
@@ -88,31 +89,60 @@ class UIManager:
         screen.blit(overlay, (0, 0))
 
         center_x = (WIDTH + BAR_WIDTH) // 2
-        center_y = (HEIGHT + HEADER_HEIGHT) // 2 - 200
+        start_y = (HEIGHT + HEADER_HEIGHT) // 2 - 200
 
         # Game Over Text
         game_over_text = self.font.render("Game Over!", True, WHITE)
-        game_over_rect = game_over_text.get_rect(centerx=center_x, centery=center_y)
+        game_over_rect = game_over_text.get_rect(centerx=center_x, top=start_y - 50)
         screen.blit(game_over_text, game_over_rect)
 
         # Score Text
         score_text = self.font.render(f"Final Score: {score}", True, WHITE)
-        score_rect = score_text.get_rect(centerx=center_x, centery=center_y + 80)
+        score_rect = score_text.get_rect(centerx=center_x, top=start_y)
         screen.blit(score_text, score_rect)
 
         # Largest Streak
-        streak_text = self.font.render(
-            f"Largest Streak: {largest_streak}",
-            True,
-            self.get_streak_color(largest_streak)
-        )
-        streak_rect = streak_text.get_rect(centerx=center_x, centery=center_y + 160)
+        streak_text = self.font.render(f"Largest Streak: {largest_streak}", True, self.get_streak_color(largest_streak))
+        streak_rect = streak_text.get_rect(centerx=center_x, top=start_y + 50)
         screen.blit(streak_text, streak_rect)
 
-        # Buttons - adjust position based on mode
-        button_y_offset = center_y + 240
-        self.play_again_button = self.draw_button(screen, "Play Again", center_x, button_y_offset)
-        self.home_button = self.draw_button(screen, "Home", center_x, button_y_offset + 80)
+        if show_name_input:
+            # Name prompt
+            prompt_text = self.font.render("Enter your name:", True, WHITE)
+            prompt_rect = prompt_text.get_rect(centerx=center_x, top=start_y + 120)
+            screen.blit(prompt_text, prompt_rect)
+
+            # Input box
+            input_rect = pygame.Rect(center_x - 150, start_y + 180, 300, 40)
+            pygame.draw.rect(screen, DARKBLUE, input_rect)
+            pygame.draw.rect(screen, WHITE, input_rect, 2)
+
+            # Player name
+            if player_name:
+                name_text = self.font.render(player_name, True, WHITE)
+                name_rect = name_text.get_rect(center=input_rect.center)
+                screen.blit(name_text, name_rect)
+
+            # Submit instruction
+            submit_text = self.font.render("Press Enter to submit", True, WHITE)
+            submit_rect = submit_text.get_rect(centerx=center_x, top=input_rect.bottom + 20)
+            screen.blit(submit_text, submit_rect)
+
+            button_y = start_y + 340
+        else:
+            button_y = start_y + 240
+
+        # Score submission message
+        if score_submitted and submission_message:
+            message_text = self.font.render(submission_message, True, (0, 255, 0))
+            message_rect = message_text.get_rect(centerx=center_x, top=start_y + 180)
+            screen.blit(message_text, message_rect)
+            button_y += 60  # Push buttons down when showing message
+
+        # Buttons
+        self.play_again_button = self.draw_button(screen, "Play Again", center_x, button_y)
+        self.home_button = self.draw_button(screen, "Home", center_x, button_y + 80)
+
     def draw_home_screen(self,screen):
 
         overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
@@ -321,4 +351,49 @@ class UIManager:
         volume_text = self.font.render(f"SFX Volume: {int(current_sfx_volume * 100)}%", True, WHITE)
         text_rect = volume_text.get_rect(left=x, bottom=y - 10)
         screen.blit(volume_text, text_rect)
+
+    def draw_leaderboard_screen(self, screen, leaderboard_data, is_hard_mode=False):
+        # Background
+        overlay = pygame.Surface((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(128)
+        screen.blit(overlay, (0, 0))
+
+        center_x = (WIDTH + BAR_WIDTH) // 2
+        center_y = (HEIGHT + BAR_WIDTH) // 2
+        start_y = 50  # Move title up
+
+        # Title
+        title_text = self.font.render("Leaderboard", True, WHITE)
+        title_rect = title_text.get_rect(centerx=center_x, top=start_y-30)
+        screen.blit(title_text, title_rect)
+
+        # Mode buttons - moved closer together
+        button_y = start_y + 60
+        self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x - 120, button_y)
+        self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x + 120, button_y)
+
+        # Leaderboard entries with smaller font
+        small_font = pygame.font.Font(FONT, 24)  # Smaller font size
+        entry_y = start_y + 120
+        spacing = 30  # Reduced spacing between entries
+
+        if leaderboard_data:
+            for i, entry in enumerate(leaderboard_data):
+                rank = f"{i + 1}."
+                entry_text = f"{rank.ljust(3)} {entry['player_name'].ljust(15)} Score: {str(entry['score']).rjust(4)} Streak: {entry['streak']}"
+                text = small_font.render(entry_text, True, WHITE)
+                rect = text.get_rect(left=center_x - 160, top=entry_y)
+                screen.blit(text, rect)
+                entry_y += spacing
+        else:
+            no_data_text = small_font.render("No scores yet!", True, WHITE)
+            no_data_rect = no_data_text.get_rect(centerx=center_x, top=entry_y)
+            screen.blit(no_data_text, no_data_rect)
+
+        # Back button
+        self.back_button = self.draw_button(screen, "Back", center_x, center_y+200)
+
+
+
 

@@ -1,6 +1,7 @@
 # game.py
 import pygame.display
 from app.game_board import GameBoard
+from app.leader_board_API import LeaderBoardAPI
 from app.music_manager import MusicManager
 from app.sound_effect_manager import SoundEffectManager
 from ui_manager import *
@@ -17,6 +18,12 @@ class Game:
         self.music_manager = MusicManager()
         self.music_manager.play_menu_music()
         self.is_hard_mode = False
+        self.leaderboard_api = LeaderBoardAPI()
+        self.show_name_input = False
+        self.player_name = ""
+        self.typing_active = False
+        self.score_submitted = False
+        self.submission_message = ""
 
     def setup_window(self):
         self.screen = pygame.display.set_mode((WIDTH + BAR_WIDTH, HEIGHT + HEADER_HEIGHT))
@@ -50,6 +57,8 @@ class Game:
             print(f"Largest Streak: {self.game_logic.largest_streak}")
         self.game_state = GAME_STATE_GAME_OVER
         self.music_manager.stop_music()
+        self.show_name_input = True
+        self.typing_active = True
 
     def level_complete(self):
         self.sound_effect_manager.play_correct_sound()
@@ -96,77 +105,106 @@ class Game:
                 pygame.quit()
                 quit(0)
 
-            # Handle mouse motion
             elif event.type == pygame.MOUSEMOTION:
                 if self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT:
                         self.board.update_hover(event.pos)
 
-            # Handle mouse click (left-click only)
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                # Home Screen
                 if self.game_state == GAME_STATE_HOME:
                     if self.ui_manager.normal_mode_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
-                        print("Normal mode selected")
                         self.set_game_mode(False)
                         self.game_state = GAME_STATE_PLAYING
                         self.reset_game()
-
                     elif self.ui_manager.hard_mode_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
-                        print("Hard mode selected")
                         self.set_game_mode(True)
                         self.game_state = GAME_STATE_PLAYING
                         self.reset_game()
-
                     elif self.ui_manager.options_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         self.game_state = GAME_STATE_OPTIONS
+                    elif self.ui_manager.leader_board_button.collidepoint(event.pos):
+                        self.sound_effect_manager.play_button_sound()
+                        self.current_leaderboard = self.leaderboard_api.get_leaderboard("normal")
+                        self.is_viewing_hard_mode = False
+                        self.game_state = GAME_STATE_LEADERBOARD
 
-                # Game Over Screen
                 elif self.game_state == GAME_STATE_GAME_OVER:
                     if self.ui_manager.play_again_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         self.reset_game()
-
                     elif self.ui_manager.home_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         self.return_to_menu()
 
-                # Options Screen
                 elif self.game_state == GAME_STATE_OPTIONS:
-                    # Handle volume slider for background music
                     if self.ui_manager.volume_slider_rect.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         rel_x = event.pos[0] - self.ui_manager.volume_slider_rect.x
                         new_volume = rel_x / self.ui_manager.volume_slider_rect.width
                         new_volume = max(0, min(1, new_volume))
                         self.music_manager.set_volume(new_volume)
-
-                    # Handle volume slider for SFX
                     elif self.ui_manager.sfx_slider_rect.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         rel_x = event.pos[0] - self.ui_manager.sfx_slider_rect.x
                         new_sfx_volume = rel_x / self.ui_manager.sfx_slider_rect.width
                         new_sfx_volume = max(0, min(1, new_sfx_volume))
                         self.sound_effect_manager.set_sfx_volume(new_sfx_volume)
-
-                    # Back button to return to Home Screen
                     elif self.ui_manager.back_button.collidepoint(event.pos):
                         self.sound_effect_manager.play_button_sound()
                         self.game_state = GAME_STATE_HOME
 
-                # Playing Screen
+                elif self.game_state == GAME_STATE_LEADERBOARD:
+                    if self.ui_manager.normal_mode_button.collidepoint(event.pos):
+                        self.sound_effect_manager.play_button_sound()
+                        self.current_leaderboard = self.leaderboard_api.get_leaderboard("normal")
+                        self.is_viewing_hard_mode = False
+                    elif self.ui_manager.hard_mode_button.collidepoint(event.pos):
+                        self.sound_effect_manager.play_button_sound()
+                        self.current_leaderboard = self.leaderboard_api.get_leaderboard("hard")
+                        self.is_viewing_hard_mode = True
+                    elif self.ui_manager.back_button.collidepoint(event.pos):
+                        self.sound_effect_manager.play_button_sound()
+                        self.game_state = GAME_STATE_HOME
+
                 elif self.game_state == GAME_STATE_PLAYING:
                     if event.pos[1] > HEADER_HEIGHT and not self.processing_click:
                         self.processing_click = True
                         self.board.handle_click(event.pos)
                         self.processing_click = False
 
-            # Handle custom events (e.g., music end)
             elif event.type == pygame.USEREVENT:
                 self.music_manager.handle_music_end()
+
+            elif event.type == pygame.KEYDOWN and self.typing_active:
+                if event.key == pygame.K_RETURN:
+                    if self.player_name.strip():
+                        self.submit_score()
+                        self.show_name_input = False
+                        self.typing_active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    self.player_name = self.player_name[:-1]
+                else:
+                    if len(self.player_name) < 20:
+                        self.player_name += event.unicode
+
+    def submit_score(self):
+        try:
+            self.leaderboard_api.submit_score(
+                self.player_name,
+                self.game_logic.score,
+                self.game_logic.largest_streak,
+                "hard" if self.is_hard_mode else "normal"
+            )
+            self.submission_message = f"Score submitted for {self.player_name}!"
+            self.score_submitted = True
+            self.message_timer = pygame.time.get_ticks()
+        except Exception as e:
+            self.submission_message = "Error submitting score"
+            self.score_submitted = True
+            self.message_timer = pygame.time.get_ticks()
 
     def update_timer(self):
         if self.game_logic.is_hard_mode and self.game_state == GAME_STATE_PLAYING:
@@ -187,6 +225,11 @@ class Game:
         self.game_state = GAME_STATE_PLAYING
         self.music_manager.start_game_playlist()
         self.music_manager.start_music()
+        # Reset leaderboard-related states
+        self.show_name_input = False
+        self.player_name = ""
+        self.score_submitted = False
+        self.submission_message = ""
 
     def update_display(self):
         self.screen.fill(BGCOLOUR)
@@ -195,11 +238,10 @@ class Game:
         if self.game_state == GAME_STATE_HOME:
             self.ui_manager.draw_home_screen(self.screen)
         elif self.game_state == GAME_STATE_OPTIONS:
-            self.ui_manager.draw_options_screen(
-                screen=self.screen,
-                current_volume=self.music_manager.volume,
-                current_sfx_volume=self.sound_effect_manager.sfx_volume
-            )
+            self.ui_manager.draw_options_screen(self.screen, self.music_manager.volume,
+                                                self.sound_effect_manager.sfx_volume)
+        elif self.game_state == GAME_STATE_LEADERBOARD:
+            self.ui_manager.draw_leaderboard_screen(self.screen, self.current_leaderboard, self.is_viewing_hard_mode)
         elif game_state['lives'] > 0 and self.game_state == GAME_STATE_PLAYING:
             if game_state['is_hard_mode']:
                 self.update_timer()
@@ -212,12 +254,15 @@ class Game:
             self.board.draw(self.screen, HEADER_HEIGHT)
             self.ui_manager.draw_height_bar(self.screen)
         else:
-
             self.ui_manager.draw_game_over_screen(
                 screen=self.screen,
                 score=self.game_logic.score,
                 largest_streak=self.game_logic.largest_streak,
-                is_hard_mode=self.is_hard_mode
+                is_hard_mode=self.is_hard_mode,
+                show_name_input=self.show_name_input,
+                player_name=self.player_name,
+                score_submitted=self.score_submitted,
+                submission_message=self.submission_message
             )
 
         pygame.display.flip()
