@@ -10,6 +10,7 @@ class GameLogic:
         self.islands = {}
         self.lives = NORMAL_LIVES
         self.score = 0
+        self.lives_streak=0
         self.consecutive_correct = 0
         self.is_hard_mode = False
         self.time_remaining = None
@@ -18,8 +19,8 @@ class GameLogic:
         # Initialize islands
         self.find_all_islands()
         self.highest_num, self.highest_avg = self.get_highest_average_island()
-        print("\nGame Started - Find the island with highest average height!")
-        self.print_islands_info()
+        # print("\nGame Started - Find the island with highest average height!")
+        # self.print_islands_info()
 
     def find_all_islands(self):
         checked_tiles = set()
@@ -76,6 +77,8 @@ class GameLogic:
                         self.highlighted_tiles = info['tiles']
                         break
 
+
+
     def get_island_at_position(self, row, col):
         for island_num, info in self.islands.items():
             if (row, col) in info['tiles']:
@@ -103,12 +106,13 @@ class GameLogic:
         if island_num is not None:
             highest_num, highest_avg = self.get_highest_average_island()
             was_correct = island_num == highest_num
-            print(f"\nClicked Island #{island_num}")
-            print(f"Average Height: {island_info['average_height']:.2f}")
+            # print(f"\nClicked Island #{island_num}")
+            # print(f"Average Height: {island_info['average_height']:.2f}")
 
             if was_correct:
                 print("Correct! This is the highest island!")
                 # Increment the score and streak in the correct guess handler, not here
+
                 return True, False
             else:
                 print(f"Wrong! Island #{highest_num} was higher with average {highest_avg:.2f}")
@@ -124,26 +128,32 @@ class GameLogic:
             self.score += 1
             self.consecutive_correct += 1
             self.largest_streak = max(self.largest_streak, self.consecutive_correct)
-            return 0  # No time bonus in Normal Mode
+            return 0
 
         # Hard Mode logic
         self.score += 1
         self.consecutive_correct += 1
+        self.lives_streak+=1
         self.largest_streak = max(self.largest_streak, self.consecutive_correct)
 
+        print(f"Lives streak:{self.lives_streak}")
+
         if self.lives < 3:  # Only if not at max lives
-            if self.consecutive_correct == 5:
+            if self.lives_streak == 5:
                 self.lives += 1
                 print(f"\nStreak of 5! Extra life earned! Lives: {self.lives}")
-                self.consecutive_correct = 0  # Reset streak after earning life
+                self.lives_streak = 0
             else:
-                print(f"\nStreak: {self.consecutive_correct}/5 for extra life")
+                print(f"\nStreak: {self.lives_streak}/5 for extra life")
 
         return TIME_BONUS
 
     def handle_wrong_guess(self):
         self.lives -= 1
-        self.consecutive_correct = 0  # Reset streak for both modes
+        self.largest_streak = max(self.largest_streak, self.consecutive_correct)
+        self.consecutive_correct = 0
+        self.lives_streak=0
+
         if self.is_hard_mode:
             print(f"Streak reset! Lives remaining: {self.lives}")
         else:
@@ -169,6 +179,7 @@ class GameLogic:
             'score': self.score,
             'largest_streak': self.largest_streak,
             'consecutive_correct': self.consecutive_correct,
+            'lives_streak': self.lives_streak,
             'is_hard_mode': self.is_hard_mode,
             'time_remaining': self.time_remaining
         }

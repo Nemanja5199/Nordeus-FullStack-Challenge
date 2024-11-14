@@ -56,15 +56,14 @@ class Game:
 
         # Only apply correct guess logic in Hard Mode
         if self.game_logic.is_hard_mode:
-            time_bonus = self.game_logic.handle_correct_guess()  # Increments score, streak, and gives bonus
+            time_bonus = self.game_logic.handle_correct_guess()
             # Update time with bonus, but not exceeding maximum
             self.game_logic.time_remaining = min(
                 HARD_MODE_TIME,
                 self.game_logic.time_remaining + time_bonus
             )
         else:
-            # In Normal Mode, simply increment the score
-            self.game_logic.score += 1
+            self.game_logic.handle_correct_guess()
 
         print("\nCorrect! Loading new map...")
 
@@ -83,6 +82,7 @@ class Game:
         # Only restore time_remaining in hard mode
         if self.game_logic.is_hard_mode:
             self.game_logic.time_remaining = old_state['time_remaining']
+            self.game_logic.lives_streak = old_state['lives_streak']
 
     def set_game_mode(self, is_hard):
         self.is_hard_mode = is_hard

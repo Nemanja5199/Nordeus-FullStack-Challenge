@@ -27,6 +27,5 @@ class SoundEffectManager:
 
     def set_sfx_volume(self, sfx_volume):
         self.sfx_volume = max(0.0, min(sfx_volume, 1.0))
-        print(f"Setting SFX volume to: {self.sfx_volume}")
         for sfx in self.sounds.values():
             sfx.set_volume(self.sfx_volume)

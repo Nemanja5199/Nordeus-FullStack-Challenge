@@ -25,6 +25,6 @@ def printData():
         print()
 
 
-# Optional: for testing
+
 if __name__ == "__main__":
     printData()

@@ -30,7 +30,6 @@ class MusicManager:
 
     def play_next_song(self):
         if self.is_playing and self.current_playlist:
-            print(f"Playing song {self.current_song_index + 1} of {len(self.current_playlist)}")
             pygame.mixer.music.load(self.current_playlist[self.current_song_index])
             pygame.mixer.music.play()
             pygame.mixer.music.set_volume(self.volume)
@@ -52,4 +51,4 @@ class MusicManager:
     def set_volume(self, volume):
         self.volume = max(0.0, min(1.0, volume))
         pygame.mixer.music.set_volume(self.volume)
-        print(f"Volume set to: {self.volume}")
+
