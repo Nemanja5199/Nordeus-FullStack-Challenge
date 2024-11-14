@@ -122,6 +122,8 @@ class GameLogic:
         if not self.is_hard_mode:
             # Just increment the score in Normal Mode
             self.score += 1
+            self.consecutive_correct += 1
+            self.largest_streak = max(self.largest_streak, self.consecutive_correct)
             return 0  # No time bonus in Normal Mode
 
         # Hard Mode logic

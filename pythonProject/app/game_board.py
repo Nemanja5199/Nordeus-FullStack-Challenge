@@ -3,7 +3,7 @@ import math
 
 from app.Input import *
 import pygame
-from color_mapper import height_to_color
+from colore_mapper import height_to_color
 from game_logic import GameLogic
 from settings import  *
 
@@ -57,7 +57,7 @@ class GameBoard:
             self.ui_manager.update_hover_height(0)
 
     def get_water_shade(self, row, col):
-        # Same logic, but now using WATER_SHADES from settings
+
         for distance in range(1, 4):
             for dr in range(-distance, distance + 1):
                 for dc in range(-distance, distance + 1):

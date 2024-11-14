@@ -1,7 +1,7 @@
 
 import pygame
 from settings import *
-from color_mapper import *
+from colore_mapper import *
 import math
 
 class UIManager:
