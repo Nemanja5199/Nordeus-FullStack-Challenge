@@ -9,7 +9,8 @@ from settings import  *
 
 class GameBoard:
     def __init__(self, on_game_over, on_level_complete, header_height, bar_width, ui_manager,sound_manager):
-        self.height_matrix = getMatrix()
+        self.previous_matrix = None
+        self.height_matrix = self.fetch_new_matrix()
         self.tile_colors = [[height_to_color(self.height_matrix[row][col])
                            for col in range(COLS)] for row in range(ROWS)]
         self.game_logic = GameLogic(self.height_matrix)
@@ -155,6 +156,20 @@ class GameBoard:
             pygame.draw.line(screen, BLACK, (x, y_offset), (x, HEIGHT + y_offset))
         for y in range(0, HEIGHT + 1, TILESIZE):
             pygame.draw.line(screen, BLACK, (0, y + y_offset), (WIDTH, y + y_offset))
+
+    def fetch_new_matrix(self):
+
+        new_matrix = getMatrix()
+
+        if self.previous_matrix == new_matrix:
+
+            return self.previous_matrix
+
+
+        self.previous_matrix = new_matrix
+        return new_matrix
+
+
 
 
 
