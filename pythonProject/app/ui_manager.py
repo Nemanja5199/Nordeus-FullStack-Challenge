@@ -280,16 +280,16 @@ class UIManager:
         # Streak text
         streak_text = self.font.render(f"Extra Life in: {remaining}", True, WHITE)
         streak_rect = streak_text.get_rect(
-            centerx=WIDTH // 2,  # Center horizontally
-            bottom=HEADER_HEIGHT - 5  # Place near bottom of header
+            centerx=WIDTH // 2,
+            bottom=HEADER_HEIGHT - 5
         )
 
         # Progress bar background
         bar_rect = pygame.Rect(
-            streak_rect.left,  # Align with text
-            streak_rect.bottom + 2,  # Just below text
-            streak_rect.width,  # Same width as text
-            4  # Height of progress bar
+            streak_rect.left,
+            streak_rect.bottom + 2,
+            streak_rect.width,
+            4
         )
         pygame.draw.rect(screen, (100, 100, 100), bar_rect)
 
@@ -303,11 +303,11 @@ class UIManager:
                 bar_rect.height
             )
 
-            # Color changes from yellow to green as progress increases
+
             progress_color = (
-                255 - (consecutive_correct * 51),  # Decreases red (255 -> 0)
-                255,  # Keep green at max
-                0  # No blue component
+                255 - (consecutive_correct * 51),
+                255,
+                0
             )
             pygame.draw.rect(screen, progress_color, progress_rect)
 
@@ -329,9 +329,7 @@ class UIManager:
             return WHITE
 
     def draw_sfx_slider(self, screen, x, y, width, height, current_sfx_volume):
-        """
-        Draws a slider bar for controlling SFX volume.
-        """
+
         # Draw slider background
         slider_rect = pygame.Rect(x, y, width, height)
         pygame.draw.rect(screen, (100, 100, 100), slider_rect)
@@ -373,10 +371,10 @@ class UIManager:
         self.normal_mode_button = self.draw_button(screen, "Normal Mode", center_x - 120, button_y)
         self.hard_mode_button = self.draw_button(screen, "Hard Mode", center_x + 120, button_y)
 
-        # Leaderboard entries with smaller font
-        small_font = pygame.font.Font(FONT, 24)  # Smaller font size
+
+        small_font = pygame.font.Font(FONT, 24)
         entry_y = start_y + 120
-        spacing = 30  # Reduced spacing between entries
+        spacing = 30
 
         if leaderboard_data:
             for i, entry in enumerate(leaderboard_data):
